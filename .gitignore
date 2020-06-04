@@ -1,0 +1,6 @@
+.idea
+venv
+
+*.pdf
+*.json
+Meta Data.txt
