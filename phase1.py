@@ -25,9 +25,49 @@ import pandas as pd
 # from sklearn.preprocessing import RobustScaler
 # from mlxtend.frequent_patterns import apriori, association_rules
 # from scipy import sparse
-import pandas as pd
+import datetime
 
 # Create dataframes from json files
 df_test = pd.read_json('./Test_Data.json', lines=True)
 df_train = pd.read_json('./Train Data.json', lines=True)
 
+baseTimeSpan = pd.Timestamp("2012-01-01 00:00:00+00:00")
+
+def jsonToDataFrame(json):
+    res = pd.DataFrame()
+    res["len"] = json.text.agg(len)
+    res["age"] = json["created_at"].agg(lambda x: (pd.Timestamp(x) - baseTimeSpan))
+    res["truncated"] = json.truncated
+    res["hashtags"] = json.entities.agg(lambda x: x["hashtags"])
+    res["user_mentions"] = json.entities.agg(lambda x: x["user_mentions"])
+    res["geo"] = json.geo
+    res["favorite_count"] = json.favorite_count
+    res["is_quote_status"] = json.is_quote_status
+    res["lang"] = json.lang
+    res["possibly_sensitive"] = json.possibly_sensitive
+
+    def filledReader(name):
+        return lambda x: None if x is None else x[name]
+
+    def userInfoToRes(str, user):
+        res[str + "__created_at"] = user.agg(filledReader("created_at")).agg(pd.Timestamp)
+        res[str + "__default_profile_image"] = user.agg(filledReader("default_profile_image"))
+        res[str + "__entities"] = user.agg(filledReader("entities"))
+        res[str + "__favourites_count"] = user.agg(filledReader("favourites_count"))
+        res[str + "__followers_count"] = user.agg(filledReader("followers_count"))
+        res[str + "__following"] = user.agg(filledReader("following"))
+        res[str + "__friends_count"] = user.agg(filledReader("friends_count"))
+        res[str + "__has_extended_profile"] = user.agg(filledReader("has_extended_profile"))
+        res[str + "__is_translator"] = user.agg(filledReader("is_translator"))
+        res[str + "__lang"] = user.agg(filledReader("lang"))
+        res[str + "__listed_count"] = user.agg(filledReader("listed_count"))
+        # res[str + "__geo"] = user.agg(filledReader("geo"))
+        res[str + "__protected"] = user.agg(filledReader("protected"))
+        res[str + "__statuses_count"] = user.agg(filledReader("statuses_count"))
+        res[str + "__verified"] = user.agg(filledReader("verified"))
+
+    userInfoToRes("retweeted-user", json.user)
+    userInfoToRes("tweeted-user", json.retweeted_status.agg(lambda x: None if type(x) is float else x["user"]))
+    return res
+
+jsonToDataFrame(df_train)
