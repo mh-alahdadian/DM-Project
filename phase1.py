@@ -85,7 +85,7 @@ def jsonToDataFrame(json):
         # res[str + "__geo"] = user.agg(filledReader("geo"))
         res[str + "__protected"] = user.agg(filledReader("protected"))
         res[str + "__statuses_count"] = user.agg(filledReader("statuses_count"))
-        res[str + "__verified"] = user.agg(filledReader("verified"))
+        res[str + "__verified"] = user.agg(lambda x: False if x is None else x["verified"])
 
     userInfoToRes("current-user", json.user)
     userInfoToRes("original-user", json.retweeted_status.agg(lambda x: None if type(x) is float else x["user"]))
