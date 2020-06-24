@@ -80,7 +80,7 @@ def jsonToDataFrame(json):
         res[str + "__verified"] = user.agg(lambda x: False if x is None else x["verified"])
 
     userInfoToRes("current-user", json.user)
-    userInfoToRes("original-user", json.retweeted_status.agg(lambda x: None if type(x) is float else x["user"]))
+    userInfoToRes("original-user", json.retweeted_status.agg(lambda x: None if type(x) is not dict else x["user"]))
 
     # Change True/False into 0/1
     for (columnName, columnData) in res.iteritems():
@@ -102,4 +102,5 @@ def jsonToDataFrame(json):
 
 
 X_train = jsonToDataFrame(df_train)
-# X_test = jsonToDataFrame(df_test)
+print("finish train")
+X_test = jsonToDataFrame(df_test)
