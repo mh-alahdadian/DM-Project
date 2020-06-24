@@ -54,8 +54,8 @@ def jsonToDataFrame(json):
     # Will be 1 if sensitive, else 0
     res["possibly_sensitive"] = json.possibly_sensitive.agg(lambda x: 0 if math.isnan(x) or x == 0 else 1)
 
-    def filledReader(name):
-        return lambda x: None if x is None else x[name]
+    def filledReader(name, defaultValue=None):
+        return lambda x: defaultValue if x is None else x[name]
 
     def booleanToBinary(column):
         return column.apply(lambda x: 0 if not x else 1)
@@ -63,29 +63,33 @@ def jsonToDataFrame(json):
     def userInfoToRes(str, user):
         res[str + "__created_at"] = user.agg(filledReader("created_at")).agg(pd.Timestamp).astype(int)\
             / (10**9 * 1440 * 60 * 365)  # Account age in years
-        res[str + "__default_profile_image"] = user.agg(filledReader("default_profile_image"))
+        res[str + "__default_profile_image"] = user.agg(filledReader("default_profile_image", False))
         # remove because nemifahmam chie
         # res[str + "__entities"] = user.agg(filledReader("entities"))
         res[str + "__favourites_count"] = user.agg(filledReader("favourites_count"))
         res[str + "__followers_count"] = user.agg(filledReader("followers_count"))
-        res[str + "__following"] = user.agg(filledReader("following"))
+        res[str + "__following"] = user.agg(filledReader("following", False))
         res[str + "__friends_count"] = user.agg(filledReader("friends_count"))
-        res[str + "__has_extended_profile"] = user.agg(filledReader("has_extended_profile"))
-        res[str + "__is_translator"] = user.agg(filledReader("is_translator"))
-        res[str + "__lang"] = user.agg(filledReader("lang"))
+        res[str + "__has_extended_profile"] = user.agg(filledReader("has_extended_profile", False))
+        res[str + "__is_translator"] = user.agg(filledReader("is_translator", False))
+        res[str + "__lang"] = user.agg(filledReader("lang", ""))
         res[str + "__listed_count"] = user.agg(filledReader("listed_count"))
         # res[str + "__geo"] = user.agg(filledReader("geo"))
-        res[str + "__protected"] = user.agg(filledReader("protected"))
+        res[str + "__protected"] = user.agg(filledReader("protected", False))
         res[str + "__statuses_count"] = user.agg(filledReader("statuses_count"))
-        res[str + "__verified"] = user.agg(lambda x: False if x is None else x["verified"])
+        res[str + "__verified"] = user.agg(filledReader("verified", False))
 
     userInfoToRes("current-user", json.user)
     userInfoToRes("original-user", json.retweeted_status.agg(lambda x: None if type(x) is not dict else x["user"]))
 
     # Change True/False into 0/1
     for (columnName, columnData) in res.iteritems():
-        print(columnName, res.dtypes[columnName])
-        if res.dtypes[columnName] == 'bool':
+        columnType = res.dtypes[columnName]
+        print(columnName, columnType)
+        # if columnType == 'object':
+        #     print(columnName)
+
+        if columnType == 'bool':
             res[columnName] = booleanToBinary(res[columnName])
 
     # 1->Short Twee(1-50) / 2->Medium Tweet(50-100) / 3->Long Tweet(100-140)
