@@ -27,21 +27,13 @@ import matplotlib.pyplot as plt
 # from mlxtend.frequent_patterns import apriori, association_rules
 # from scipy import sparse
 import datetime
-import os
+from os.path import join
 
 DRAW_DIST_PLOT = False
 
 # Create dataframes from json files
-# Linux
-# df_test = pd.read_json('./Test_Data.json', lines=True)
-# df_train = pd.read_json('./Train Data.json', lines=True)
-# Windows
-fileDir = os.path.dirname(os.path.abspath(__file__))
-testAbsPath = os.path.join(fileDir, 'Test_Data.json')
-trainAbsPath = os.path.join(fileDir, 'Train_Data.json')
-
-df_test = pd.read_json(testAbsPath, lines=True)
-df_train = pd.read_json(trainAbsPath, lines=True)
+df_test = pd.read_json(join('.', 'Test_Data.json'), lines=True)
+df_train = pd.read_json(join('.', 'Train_Data.json'), lines=True)
 
 baseTimeSpan = pd.Timestamp("2012-01-01 00:00:00+00:00")
 
