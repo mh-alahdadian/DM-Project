@@ -131,8 +131,8 @@ def jsonToDataFrame(json):
         outlier_columns.extend([str + "__favourites_count", str + "__followers_count",
                                 str + "__listed_count", str + "__statuses_count"])
 
-    userInfoToRes("current-user", json.user)
-    userInfoToRes("original-user", json.retweeted_status.agg(lambda x: None if type(x) is not dict else x["user"]))
+    userInfoToRes("retweeter-user", json.agg(lambda x: None if type(x.retweeted_status) is not dict else x.user, axis="columns"))
+    userInfoToRes("original-user", json.agg(lambda x: x.user if type(x.retweeted_status) is not dict else x.retweeted_status["user"], axis="columns"))
 
     # 1 if the tweet is viral (retweets are above median), 0 if not
     res_x['viral'] = json.retweeted_status.agg(lambda x: None if type(x) is not dict else x["retweet_count"])
