@@ -55,7 +55,7 @@ netifaces==0.10.4
 networkx==2.4
 notebook==6.0.3
 numba==0.49.0
-numpy==1.18.3
+numpy==1.22.0
 oauthlib==3.1.0
 olefile==0.46
 onboard==1.4.1
